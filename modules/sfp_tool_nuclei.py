@@ -43,8 +43,8 @@ class sfp_tool_nuclei(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "nuclei_path": "",
-        "template_path": "",
+        "nuclei_path": "/usr/local/bin/nuclei",
+        "template_path": "/opt/nuclei-templates",
         'netblockscan': True,
         'netblockscanmax': 24
     }
@@ -155,7 +155,7 @@ class sfp_tool_nuclei(SpiderFootPlugin):
             args = [
                 exe,
                 "-silent",
-                "-json",
+                "-jsonl",
                 "-concurrency",
                 "100",
                 "-retries",

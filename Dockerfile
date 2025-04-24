@@ -1,39 +1,3 @@
-#
-# Spiderfoot Dockerfile
-#
-# http://www.spiderfoot.net
-#
-# Written by: Michael Pellon <m@pellon.io>
-# Updated by: Chandrapal <bnchandrapal@protonmail.com>
-# Updated by: Steve Micallef <steve@binarypool.com>
-# Updated by: Steve Bate <svc-spiderfoot@stevebate.net>
-#    -> Inspired by https://github.com/combro2k/dockerfiles/tree/master/alpine-spiderfoot
-#
-# Usage:
-#
-#   sudo docker build -t spiderfoot .
-#   sudo docker run -p 5001:5001 --security-opt no-new-privileges spiderfoot
-#
-# Using Docker volume for spiderfoot data
-#
-#   sudo docker run -p 5001:5001 -v /mydir/spiderfoot:/var/lib/spiderfoot spiderfoot
-#
-# Using SpiderFoot remote command line with web server
-#
-#   docker run --rm -it spiderfoot sfcli.py -s http://my.spiderfoot.host:5001/
-#
-# Running spiderfoot commands without web server (can optionally specify volume)
-#
-#   sudo docker run --rm spiderfoot sf.py -h
-#
-# Running a shell in the container for maintenance
-#   sudo docker run -it --entrypoint /bin/sh spiderfoot
-#
-# Running spiderfoot unit tests in container
-#
-#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=test/requirements.txt .
-#   sudo docker run --rm spiderfoot-test -m pytest --flake8 .
-
 FROM alpine:3.12.4 AS build
 ARG REQUIREMENTS=requirements.txt
 RUN apk add --no-cache gcc git curl python3 python3-dev py3-pip swig tinyxml-dev \
@@ -51,14 +15,14 @@ RUN pip3 install -r "$REQUIREMENTS"
 
 FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
-
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 # Place database and logs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
 ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
 ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
 
 # Run everything as one command so that only one layer is created
-RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg \
+RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg nmap nmap-scripts ruby ruby-bundler ruby-dev build-base git yaml-dev nano git musl-dev gcc musl-dev wget tar \
     && addgroup spiderfoot \
     && adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
                -g "SpiderFoot User" -D spiderfoot \
@@ -70,16 +34,46 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && mkdir -p $SPIDERFOOT_CACHE || true \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
-    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE 
+
+# Clonar o WhatWeb diretamente do repositório
+RUN git clone https://github.com/urbanadventurer/WhatWeb.git /opt/whatweb \
+    && cd /opt/whatweb \
+    && bundle install
+
+RUN ln -s /opt/whatweb/whatweb /usr/local/bin/whatweb
+
+# Nuclei
+# Baixar e instalar Go 1.22.3
+RUN wget -q https://go.dev/dl/go1.22.3.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz && \
+    rm go1.22.3.linux-amd64.tar.gz
+
+# Adicionar Go ao PATH
+ENV PATH="/usr/local/go/bin:$PATH"
+
+# Clonar e compilar Nuclei
+RUN git clone --depth 1 https://github.com/projectdiscovery/nuclei.git /opt/nuclei && \
+    cd /opt/nuclei/cmd/nuclei && \
+    go build && \
+    mv nuclei /usr/local/bin/
+
+
+RUN mkdir -p /opt/nuclei-templates && \
+    git clone https://github.com/projectdiscovery/nuclei-templates.git /opt/nuclei-templates && \
+    nuclei -update-templates -t /opt/nuclei-templates
 
 COPY . .
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-USER spiderfoot
+COPY final.py /home/spiderfoot/final.py
+
+USER root
 
 EXPOSE 5001
 
 # Run the application.
-ENTRYPOINT ["/opt/venv/bin/python"]
-CMD ["sf.py", "-l", "0.0.0.0:5001"]
+ENTRYPOINT ["/opt/venv/bin/python", "/home/spiderfoot/final.py"]
+CMD ["/home/spiderfoot/final.py", "tail", "-f", "/dev/null"]
+#CMD ["/bin/bash", "-c", "tail -f /dev/null"]
