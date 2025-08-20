@@ -4,6 +4,8 @@ services:
       context: .
     volumes:
       - spiderfoot-data:/var/lib/spiderfoot
+      - /home/lab/spiderfoot/uploads:/home/spiderfoot/uploads
+      - /home/lab/spiderfoot/scripts:/home/spiderfoot/scripts:rw
     image: spiderfoot
     container_name: spiderfoot
     ports:

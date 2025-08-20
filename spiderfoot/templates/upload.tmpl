@@ -1,0 +1,25 @@
+<%include file="HEADER.tmpl"/>
+
+<div class="container" style="max-width: 720px; margin: 2rem auto;">
+  <h1 style="margin-bottom: 1rem;">Enviar lista (.txt)</h1>
+
+  
+  % if show_success or cherrypy.request.params.get('ok') == '1':
+  <div class="alert alert-success" role="alert">
+    Arquivo enviado com sucesso 🎉
+  </div>
+  % endif
+
+
+  <p>Selecione um arquivo <code>.txt</code></p>
+
+  <form action="${docroot}/uploadtxt" method="post" enctype="multipart/form-data" style="margin-top:1rem;">
+    <div style="margin-bottom: 1rem;">
+      <input type="file" name="txtfile" accept=".txt" required />
+    </div>
+    <button type="submit">Enviar</button>
+  </form>
+
+</div>
+
+<%include file="FOOTER.tmpl"/>

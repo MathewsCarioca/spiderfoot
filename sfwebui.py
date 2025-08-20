@@ -20,9 +20,11 @@ import time
 from copy import deepcopy
 from io import BytesIO, StringIO
 from operator import itemgetter
-
+from pathlib import Path
 import cherrypy
 from cherrypy import _cperror
+import os, time, re, traceback
+from pathlib import Path
 
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -323,6 +325,50 @@ class SpiderFootWebUi:
             workbook.save(f)
             f.seek(0)
             return f.read()
+
+    #
+    # Melman Code
+    #
+    @cherrypy.expose
+    def upload(self):
+        templ = Template(filename='spiderfoot/templates/upload.tmpl', lookup=self.lookup)
+        return templ.render(pageid='UPLOAD',
+                            docroot=self.docroot,
+                            version=__version__,
+                            cherrypy=cherrypy,
+                            show_success=False)
+
+    @cherrypy.expose
+    def uploadtxt(self, **params):
+        try:
+            part = cherrypy.request.params.get("txtfile")
+            if not part or not hasattr(part, "file"):
+                return "Nenhum arquivo recebido (param txtfile ausente)."
+
+            raw_name = os.path.basename(getattr(part, "filename", "") or "")
+            if not raw_name.lower().endswith(".txt"):
+                return "Apenas arquivos .txt são aceitos."
+
+            dest_dir = Path("./uploads")
+            dest_dir.mkdir(parents=True, exist_ok=True)
+
+            safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", raw_name)
+            dest_path = dest_dir / safe_name
+
+            with open(dest_path, "wb") as f:
+                f.write(part.file.read())
+
+            templ = Template(filename='spiderfoot/templates/upload.tmpl', lookup=self.lookup)
+            return templ.render(pageid='UPLOAD',
+                                docroot=self.docroot,
+                                version=__version__,
+                                cherrypy=cherrypy,
+                                show_success=True)
+        except Exception as e:
+            cherrypy.log(f"[uploadtxt] Erro: {e}")
+            cherrypy.log(traceback.format_exc())
+            return f"Erro interno: {e}"
+
 
     #
     # USER INTERFACE PAGES

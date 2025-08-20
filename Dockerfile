@@ -1,6 +1,6 @@
 FROM alpine:3.12.4 AS build
 ARG REQUIREMENTS=requirements.txt
-RUN apk add --no-cache gcc git curl python3 python3-dev py3-pip swig tinyxml-dev \
+RUN apk add --no-cache tzdata gcc git curl python3 python3-dev py3-pip swig tinyxml-dev \
  python3-dev musl-dev openssl-dev libffi-dev libxslt-dev libxml2-dev jpeg-dev \
  openjpeg-dev zlib-dev cargo rust
 RUN python3 -m venv /opt/venv
@@ -22,7 +22,7 @@ ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
 ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
 
 # Run everything as one command so that only one layer is created
-RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg nmap nmap-scripts ruby ruby-bundler ruby-dev build-base git yaml-dev nano git musl-dev gcc musl-dev wget tar \
+RUN apk --update --no-cache add tzdata python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg nmap nmap-scripts ruby ruby-bundler ruby-dev build-base git yaml-dev nano git musl-dev gcc musl-dev wget tar \
     && addgroup spiderfoot \
     && adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
                -g "SpiderFoot User" -D spiderfoot \
@@ -52,16 +52,19 @@ RUN wget -q https://go.dev/dl/go1.22.3.linux-amd64.tar.gz && \
 # Adicionar Go ao PATH
 ENV PATH="/usr/local/go/bin:$PATH"
 
+#acertando a data
+ENV TZ=America/Sao_Paulo
+
 # Clonar e compilar Nuclei
-RUN git clone --depth 1 https://github.com/projectdiscovery/nuclei.git /opt/nuclei && \
-    cd /opt/nuclei/cmd/nuclei && \
-    go build && \
-    mv nuclei /usr/local/bin/
+#RUN git clone --depth 1 https://github.com/projectdiscovery/nuclei.git /opt/nuclei && \
+#    cd /opt/nuclei/cmd/nuclei && \
+#    go build && \
+#    mv nuclei /usr/local/bin/
 
 
-RUN mkdir -p /opt/nuclei-templates && \
-    git clone https://github.com/projectdiscovery/nuclei-templates.git /opt/nuclei-templates && \
-    nuclei -update-templates -t /opt/nuclei-templates
+#RUN mkdir -p /opt/nuclei-templates && \
+#    git clone https://github.com/projectdiscovery/nuclei-templates.git /opt/nuclei-templates && \
+#    nuclei -update-templates -t /opt/nuclei-templates
 
 COPY . .
 COPY --from=build /opt/venv /opt/venv

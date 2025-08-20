@@ -100,7 +100,7 @@ class sfp_tool_nmapfull(SpiderFootPlugin):
 
         try:
             # Executa o Nmap
-            p = Popen([exe, "-sV", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen([exe, "-A", eventData], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
 
             # Trata erro na execução do Nmap
