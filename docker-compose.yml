@@ -6,6 +6,7 @@ services:
       - spiderfoot-data:/var/lib/spiderfoot
       - /home/lab/spiderfoot/uploads:/home/spiderfoot/uploads
       - /home/lab/spiderfoot/scripts:/home/spiderfoot/scripts:rw
+      - /home/lab/spiderfoot/export_html:/home/spiderfoot/export_html:Z
     image: spiderfoot
     container_name: spiderfoot
     ports:

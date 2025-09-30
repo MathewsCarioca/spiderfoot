@@ -42,7 +42,7 @@
               <li><a class='link' onClick='exportEventData("${id}", currentType, "csv")'>CSV</a></li>
               <li><a class='link' onClick='exportEventData("${id}", currentType, "excel")'>Excel</a></li>
               <li><a class='link' onClick='exportEventData("${id}", currentType, "json")'>JSON</a></li>
-              <li><a class='link' onClick='exportEventData("${id}", currentType, "html")'>HTML</a></li>
+                <li><a class='link' onClick='exportHTMLDashboard("${id}")'>Dashboard HTML (TI Safe)</a></li>
             </ul>
         </div> 
         <div id='customtabview' role="group" class="btn-group pull-right">
@@ -427,7 +427,7 @@
             sf.fetchData('${docroot}/scaneventresults', { 'id': instanceId, 'correlationId': correlationId }, function(data) {
                 var table = "<table id='corrcontent_'" + correlationId + "' class='table table-bordered table-striped small'>";
                 table += "<thead><tr>";
-                table += "<th>Data Element</th></th>";
+                table += "<th>Data Element</th>";
                 table += "<th>Source Data Element</th>";
                 table += "<th>Source Module</th>";
                 table += "<th>Identified</th>";
@@ -639,7 +639,7 @@
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'>";
                             table += "<thead><tr>";
                             table += "<th class='text-center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'></th>";
-                            table += "<th>Data Element</th></th>";
+                            table += "<th>Data Element</th>";
                             table += "<th>Source Data Element</th>";
                             table += "<th>Source Module</th>";
                             table += "<th>Identified</th>";
@@ -778,6 +778,15 @@
             sf.log("Loading logs for scan: " + instanceId);
             var efr = document.getElementById('exportframe');
             var urlBase = '${docroot}/scanexportlogs?id=';
+            efr.src = urlBase + instanceId;
+            $("#loader").fadeOut(500);
+        }
+
+        function exportHTMLReport(instanceId) {
+            $("#loader").show();
+            sf.log("Exporting HTML report for scan: " + instanceId);
+            var efr = document.getElementById('exportframe');
+            var urlBase = '${docroot}/scanexporthtml?id=';
             efr.src = urlBase + instanceId;
             $("#loader").fadeOut(500);
         }
@@ -923,6 +932,11 @@
         }
 
         refreshSummaryInterval = setInterval(refreshSummary, 5000);
+
+        // Function to export HTML dashboard
+        function exportHTMLDashboard(instanceId) {
+            window.open('/scanexporthtml?id=' + instanceId, '_blank');
+        }
 
     </script>
 <iframe class="hidden" id='exportframe'></iframe>

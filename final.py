@@ -1,6 +1,6 @@
 import subprocess
 
-# Comando original com a adição do WhatWeb
+# Comando original com a adição do Whatweb e Nmap
 command = """
 /opt/venv/bin/python -c 'from spiderfoot import SpiderFootDb; \
 db = SpiderFootDb({"__database": "/var/lib/spiderfoot/spiderfoot.db"}); \

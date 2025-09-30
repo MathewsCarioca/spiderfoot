@@ -1,25 +1,49 @@
 <%include file="HEADER.tmpl"/>
+<h2>Uploads e Relatórios</h2>
 
-<div class="container" style="max-width: 720px; margin: 2rem auto;">
-  <h1 style="margin-bottom: 1rem;">Enviar lista (.txt)</h1>
-
-  
-  % if show_success or cherrypy.request.params.get('ok') == '1':
-  <div class="alert alert-success" role="alert">
-    Arquivo enviado com sucesso 🎉
-  </div>
-  % endif
-
-
-  <p>Selecione um arquivo <code>.txt</code></p>
-
-  <form action="${docroot}/uploadtxt" method="post" enctype="multipart/form-data" style="margin-top:1rem;">
-    <div style="margin-bottom: 1rem;">
-      <input type="file" name="txtfile" accept=".txt" required />
+<div class="row" style="padding-top: 20px">
+  <div class="col-sm-6">
+    <div class="panel panel-default">
+      <div class="panel-heading"><b>Upload de TXT</b></div>
+      <div class="panel-body">
+        % if show_success:
+          <div class="alert alert-success">Arquivo TXT enviado com sucesso.</div>
+        % endif
+        <form class="form" action='${docroot}/uploadtxt' method='POST' enctype='multipart/form-data'>
+          <div class='form-group'>
+            <label for="txtfile">Selecione o arquivo .txt</label>
+            <input class='form-control' type="file" id="txtfile" name="txtfile" accept=".txt"/>
+          </div>
+          <button class="btn btn-primary" type="submit">Enviar TXT</button>
+        </form>
+      </div>
     </div>
-    <button type="submit">Enviar</button>
-  </form>
+  </div>
 
+  <div class="col-sm-6">
+    <div class="panel panel-default">
+      <div class="panel-heading"><b>Gerar Relatório (JSON)</b></div>
+      <div class="panel-body">
+        <form class="form" action='${docroot}/uploadjson' method='POST' enctype='multipart/form-data'>
+          <div class='form-group'>
+            <label for="jsonfile">Enviar arquivo .json (opcional)</label>
+            <input class='form-control' type='file' id='jsonfile' name='jsonfile' accept='.json'>
+          </div>
+          <div class='form-group'>
+            <label for="jsondata">Ou cole o JSON exportado do SpiderFoot</label>
+            <textarea class='form-control' id='jsondata' name='jsondata' rows='10' placeholder='[ { "data": "...", "event_type": "...", ... } ]'></textarea>
+          </div>
+          <div class='form-group'>
+            <label for="reportname">Nome do Relatório (opcional)</label>
+            <input class='form-control' type='text' id='reportname' name='reportname' placeholder='SpiderFoot Custom Report'>
+          </div>
+          <button class="btn btn-success" type="submit">Gerar HTML</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <%include file="FOOTER.tmpl"/>
+
+

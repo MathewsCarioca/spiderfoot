@@ -1,2 +1,2 @@
 #!/bin/sh
-cp arquivos/*.txt uploads
+cp arquivos/*.txt ../uploads

@@ -17,9 +17,9 @@ FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 # Place database and logs outside installation directory
-ENV SPIDERFOOT_DATA /var/lib/spiderfoot
-ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
-ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
+ENV SPIDERFOOT_DATA=/var/lib/spiderfoot
+ENV SPIDERFOOT_LOGS=/var/lib/spiderfoot/log
+ENV SPIDERFOOT_CACHE=/var/lib/spiderfoot/cache
 
 # Run everything as one command so that only one layer is created
 RUN apk --update --no-cache add tzdata python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg nmap nmap-scripts ruby ruby-bundler ruby-dev build-base git yaml-dev nano git musl-dev gcc musl-dev wget tar \
@@ -61,7 +61,6 @@ ENV TZ=America/Sao_Paulo
 #    go build && \
 #    mv nuclei /usr/local/bin/
 
-
 #RUN mkdir -p /opt/nuclei-templates && \
 #    git clone https://github.com/projectdiscovery/nuclei-templates.git /opt/nuclei-templates && \
 #    nuclei -update-templates -t /opt/nuclei-templates
@@ -71,6 +70,12 @@ COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY final.py /home/spiderfoot/final.py
+
+RUN mkdir -p /home/spiderfoot/export_html 
+
+COPY export_html/sfwebui.py /home/spiderfoot/sfwebui.py
+COPY export_html/scaninfo.tmpl /home/spiderfoot/spiderfoot/templates
+COPY export_html/spiderfoot.scanlist.js /home/spiderfoot/spiderfoot/static/js
 
 USER root
 

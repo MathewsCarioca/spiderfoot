@@ -121,6 +121,10 @@ function exportSelected(type) {
             sf.log("Exporting scans as " + type + ": " + ids.join(','));
             efr.src = docroot + '/scanexportjsonmulti?ids=' + ids.join(',');
             break;
+        case "html":
+            sf.log("Exporting scans as " + type + ": " + ids.join(','));
+            efr.src = docroot + '/scanexporthtmlmulti?ids=' + ids.join(',');
+            break;
         default:
             sf.log("Error: Invalid export type: " + type);
     }
@@ -292,4 +296,3 @@ function showlisttable(types, filter, data) {
 }
 
 showlist();
-
